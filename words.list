@@ -1,0 +1,8 @@
+ruby /1e--10/
+ruby ruby /1e-9/
+ruby listen /1e-9/
+play /1e--10/
+pause /1e--10/
+pauze /1e--10/
+stop /1e--10/
+close /1e--10/
