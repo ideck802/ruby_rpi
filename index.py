@@ -34,13 +34,19 @@ config.read(os.path.join(path, "config.ini"))
 
 play_music.music_path = config["paths"]["music_path"]
 
+is_listening = False
+
 def button_stuff():
     while True:
         state = GPIO.input(BUTTON)
         if state:
             time.sleep(0.2)
         else:
-            reset_audio()
+            print(is_listening)
+            if is_listening == True:
+                timeout()
+            else:
+                reset_audio()
 
 import RPi.GPIO as GPIO
 BUTTON = 17
@@ -49,14 +55,17 @@ GPIO.setup(BUTTON, GPIO.IN)
 button_thread = threading.Thread(target=button_stuff)
 button_thread.start()
 
+def timeout():
+    print("timeout")
+    mixer_record.setvolume(mixer_record.getvolume(alsaaudio.PCM_CAPTURE)[0]-30)
+    time.sleep(3)
+    mixer_record.setvolume(mixer_record.getvolume(alsaaudio.PCM_CAPTURE)[0]+30)
+
 def timeout_timer(pill2kill):
     counter = 0
     while (counter <= 8) and (not pill2kill.is_set()):
         if counter == 8:
-            print("timeout")
-            mixer_record.setvolume(mixer_record.getvolume(alsaaudio.PCM_CAPTURE)[0]-30)
-            time.sleep(3)
-            mixer_record.setvolume(mixer_record.getvolume(alsaaudio.PCM_CAPTURE)[0]+30)
+            timeout()
         counter+=1
         time.sleep(1)
 
@@ -296,6 +305,8 @@ speech = LiveSpeech(lm=False, kws='words.list')
 speech_music = LiveSpeech(lm=False, kws='words_music.list')
 
 def init_listen():
+    global is_listening
+    is_listening = False
     print(play_music.playing_song)
     global kill_pulse
     if play_music.playing_song == False:
@@ -310,6 +321,7 @@ def init_listen():
                 pygame.mixer.music.play()
                 time.sleep(1)
                 print("yes?")
+                is_listening = True
                 listen_for_commands()
                 break
             elif (phrase.segments()[0] == "play ") and (play_music.vlc_open == True):
