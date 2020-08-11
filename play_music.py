@@ -17,10 +17,13 @@ def start(song):
                 global playing_song
                 global vlc_open
                 
-                player = Popen("vlc " + test, shell=True)
-                playing_song = True
-                vlc_open = True
-                print(player)
+                if vlc_open == False:
+                    player = Popen("vlc " + test, shell=True)
+                    playing_song = True
+                    vlc_open = True
+                    print(player)
+                else:
+                    player2 = Popen("vlc --one-instance --playlist-enqueue " + test, shell=True)
 
 def close():
     global playing_song
