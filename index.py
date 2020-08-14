@@ -242,7 +242,7 @@ def listen_for_commands():
             if eval(test[i].term):
                 command_init()
                 
-                test[i].run()
+                test[i].run(value)
                 
                 kill_flash.set() #kill the lights flashing
         
@@ -261,7 +261,7 @@ class command:
         self.term = term
         self.output = output
         
-    def run(self):
+    def run(self, value):
         exec(compile(self.output,"-","exec"))
 
 txt = """
