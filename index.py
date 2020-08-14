@@ -77,6 +77,13 @@ def speak(phrase):
     pygame.mixer.music.play()
     time.sleep(1)
 
+def command_init():
+    global kill_flash
+    kill_pulse.set() #kill the lights pulsing
+    kill_flash = threading.Event()
+    lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
+    lights_thread.start()
+
 def listen_for_commands():
     global srt
     print("Say something!")
@@ -103,10 +110,7 @@ def listen_for_commands():
         print("You said {}".format(value))
         
         if re.match(r"open *", value) != None:
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
             
             app_name = value.split(" ") #get last word
             speak("opening " + app_name[1])
@@ -114,53 +118,38 @@ def listen_for_commands():
             
             kill_flash.set() #kill the lights flashing
         
-        if (len(value) > 4) and (re.match(r"play *", value) != None):
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
-            
-            song_name = value.split(" ", 1) #omit the word play
-            speak("playing " + song_name[1])
-            play_music.start(song_name[1])
-            
-            kill_flash.set() #kill the lights flashing
+        #if (len(value) > 4) and (re.match(r"play *", value) != None):
+        #    command_init()
+        #    
+        #    song_name = value.split(" ", 1) #omit the word play
+        #    speak("playing " + song_name[1])
+        #    play_music.start(song_name[1])
+        #    
+        #    kill_flash.set() #kill the lights flashing
         
         if value == "close":
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
             
             play_music.close()
             
             kill_flash.set() #kill the lights flashing
             
         if value == "play":
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
             
             play_music.play()
             
             kill_flash.set() #kill the lights flashing
             
         if value == "pause":
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
             
             play_music.pause()
             
             kill_flash.set() #kill the lights flashing
             
         if value == "stop":
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
             
             play_music.stop()
             
@@ -171,10 +160,7 @@ def listen_for_commands():
             play_music.set_volume(int(volume_amount[-1]))
                 
         if value == "reset audio":
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
             
             m = sr.Microphone()
             print("A moment of silence, please...")
@@ -184,92 +170,81 @@ def listen_for_commands():
             kill_flash.set() #kill the lights flashing
                 
         if (value == "turn on the computer") or (value == "turn on my computer"):
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
             
             send_magic_packet("70-85-C2-C7-2C-B6")
             
             kill_flash.set() #kill the lights flashing
             
         if (value == "turn on the server") or (value == "turn on my server"):
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
             
             send_magic_packet("f8:0f:41:04:86:a8")
             
             kill_flash.set() #kill the lights flashing
         
         if value == "bake me a cake":
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
             
             speak("i cannot bake a cake")
             
             kill_flash.set() #kill the lights flashing
                 
         if value == "turn off computer":
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
             
             kill_flash.set() #kill the lights flashing
             os.system("sudo shutdown now")
                 
         if value == "restart computer" or value == "reboot computer":
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
             
             kill_flash.set() #kill the lights flashing
             os.system("sudo reboot now")
             
         if re.match(r"shutdown at *", value) != None:
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
+            
             #get last word which should be a number
             time = value.split(" ")
             print(time[-1])
+            
             kill_flash.set() #kill the lights flashing
         
         if (re.match(r"set volume *", value) != None) or (re.match(r"set volume to *", value) != None):
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
+            
             #get last word which should be a number
             amount = value.split(" ")
             mixer.setvolume(int(amount[-1]))
+            
             kill_flash.set() #kill the lights flashing
             
         if value == "turn on the lights" or value == "activate lights" or value == "activate the lights":
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
+            
             #get last word which should be a number
             #speak("turning on the lights")
             bluetooth_stuff.turnon()
+            
             kill_flash.set() #kill the lights flashing
             
         if value == "turn off the lights" or value == "deactivate lights" or value == "deactivate the lights":
-            kill_pulse.set() #kill the lights pulsing
-            kill_flash = threading.Event()
-            lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-            lights_thread.start()
+            command_init()
+            
             #get last word which should be a number
             #speak("turning off the lights")
             bluetooth_stuff.turnoff()
+            
             kill_flash.set() #kill the lights flashing
+            
+        for i in range(len(test)):
+            if eval(test[i].term):
+                command_init()
+                
+                test[i].run()
+                
+                kill_flash.set() #kill the lights flashing
         
         kill_pulse.set() #kill the lights pulsing
         
@@ -280,6 +255,24 @@ def listen_for_commands():
         print("Uh oh! Couldn't request results from Houndify Speech Recognition service; {0}".format(e))
         srt = srt + 1
         
+
+class command:
+    def __init__(self,term,output):
+        self.term = term
+        self.output = output
+        
+    def run(self):
+        exec(compile(self.output,"-","exec"))
+
+txt = """
+song_name = value.split(" ", 1)
+speak("playing " + song_name[1])
+play_music.start(song_name[1])
+"""
+test = []
+test.append(command("(len(value) > 4) and (re.match(r'play *', value) != None)",txt))
+test.append(command("hello world",txt))
+
 def reset_audio():
     color_temp = lights.color
     lights.set_color(0,0,255)
