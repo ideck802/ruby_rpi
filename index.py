@@ -109,14 +109,14 @@ def listen_for_commands():
         
         print("You said {}".format(value))
         
-        if re.match(r"open *", value) != None:
-            command_init()
-            
-            app_name = value.split(" ") #get last word
-            speak("opening " + app_name[1])
-            open_app.run(app_name[-1])
-            
-            kill_flash.set() #kill the lights flashing
+        #if re.match(r"open *", value) != None:
+        #    command_init()
+        #    
+        #    app_name = value.split(" ") #get last word
+        #    speak("opening " + app_name[1])
+        #    open_app.run(app_name[-1])
+        #    
+        #    kill_flash.set() #kill the lights flashing
         
         #if (len(value) > 4) and (re.match(r"play *", value) != None):
         #    command_init()
@@ -127,122 +127,122 @@ def listen_for_commands():
         #    
         #    kill_flash.set() #kill the lights flashing
         
-        if value == "close":
-            command_init()
+        #if value == "close":
+        #    command_init()
+        #    
+        #    play_music.close()
+        #    
+        #    kill_flash.set() #kill the lights flashing
             
-            play_music.close()
+        #if value == "play":
+        #    command_init()
+        #    
+        #    play_music.play()
+        #    
+        #    kill_flash.set() #kill the lights flashing
             
-            kill_flash.set() #kill the lights flashing
+        #if value == "pause":
+        #    command_init()
+        #    
+        #    play_music.pause()
+        #    
+        #    kill_flash.set() #kill the lights flashing
             
-        if value == "play":
-            command_init()
+        #if value == "stop":
+        #    command_init()
+        #    
+        #    play_music.stop()
+        #    
+        #    kill_flash.set() #kill the lights flashing
             
-            play_music.play()
-            
-            kill_flash.set() #kill the lights flashing
-            
-        if value == "pause":
-            command_init()
-            
-            play_music.pause()
-            
-            kill_flash.set() #kill the lights flashing
-            
-        if value == "stop":
-            command_init()
-            
-            play_music.stop()
-            
-            kill_flash.set() #kill the lights flashing
-            
-        if re.match(r"set music volume to *", value) != None:
-            volume_amount = value.split(" ") #get last word
-            play_music.set_volume(int(volume_amount[-1]))
+        #if re.match(r"set music volume to *", value) != None:
+        #    volume_amount = value.split(" ") #get last word
+        #    play_music.set_volume(int(volume_amount[-1]))
                 
-        if value == "reset audio":
-            command_init()
-            
-            m = sr.Microphone()
-            print("A moment of silence, please...")
-            with m as source: r.adjust_for_ambient_noise(source)
-            print("Set minimum energy threshold to {}".format(r.energy_threshold))
-            
-            kill_flash.set() #kill the lights flashing
+        #if value == "reset audio":
+        #    command_init()
+        #    
+        #    m = sr.Microphone()
+        #    print("A moment of silence, please...")
+        #    with m as source: r.adjust_for_ambient_noise(source)
+        #    print("Set minimum energy threshold to {}".format(r.energy_threshold))
+        #    
+        #    kill_flash.set() #kill the lights flashing
                 
-        if (value == "turn on the computer") or (value == "turn on my computer"):
-            command_init()
+        #if (value == "turn on the computer") or (value == "turn on my computer"):
+        #    command_init()
+        #    
+        #    send_magic_packet("70-85-C2-C7-2C-B6")
+        #    
+        #    kill_flash.set() #kill the lights flashing
             
-            send_magic_packet("70-85-C2-C7-2C-B6")
-            
-            kill_flash.set() #kill the lights flashing
-            
-        if (value == "turn on the server") or (value == "turn on my server"):
-            command_init()
-            
-            send_magic_packet("f8:0f:41:04:86:a8")
-            
-            kill_flash.set() #kill the lights flashing
+        #if (value == "turn on the server") or (value == "turn on my server"):
+        #    command_init()
+        #    
+        #    send_magic_packet("f8:0f:41:04:86:a8")
+        #    
+        #    kill_flash.set() #kill the lights flashing
         
-        if value == "bake me a cake":
-            command_init()
-            
-            speak("i cannot bake a cake")
-            
-            kill_flash.set() #kill the lights flashing
+        #if value == "bake me a cake":
+        #    command_init()
+        #    
+        #    speak("i cannot bake a cake")
+        #    
+        #    kill_flash.set() #kill the lights flashing
                 
-        if value == "turn off computer":
-            command_init()
-            
-            kill_flash.set() #kill the lights flashing
-            os.system("sudo shutdown now")
+        #if value == "turn off computer":
+        #    command_init()
+        #    
+        #    kill_flash.set() #kill the lights flashing
+        #    os.system("sudo shutdown now")
                 
-        if value == "restart computer" or value == "reboot computer":
-            command_init()
+        #if value == "restart computer" or value == "reboot computer":
+        #    command_init()
+        #    
+        #    kill_flash.set() #kill the lights flashing
+        #    os.system("sudo reboot now")
             
-            kill_flash.set() #kill the lights flashing
-            os.system("sudo reboot now")
-            
-        if re.match(r"shutdown at *", value) != None:
-            command_init()
-            
-            #get last word which should be a number
-            time = value.split(" ")
-            print(time[-1])
-            
-            kill_flash.set() #kill the lights flashing
+        #if re.match(r"shutdown at *", value) != None:
+        #    command_init()
+        #    
+        #    #get last word which should be a number
+        #    time = value.split(" ")
+        #    print(time[-1])
+        #    
+        #    kill_flash.set() #kill the lights flashing
         
-        if (re.match(r"set volume *", value) != None) or (re.match(r"set volume to *", value) != None):
-            command_init()
+        #if (re.match(r"set volume *", value) != None) or (re.match(r"set volume to *", value) != None):
+        #    command_init()
+        #    
+        #    #get last word which should be a number
+        #    amount = value.split(" ")
+        #    mixer.setvolume(int(amount[-1]))
+        #    
+        #    kill_flash.set() #kill the lights flashing
             
-            #get last word which should be a number
-            amount = value.split(" ")
-            mixer.setvolume(int(amount[-1]))
+        #if value == "turn on the lights" or value == "activate lights" or value == "activate the lights":
+        #    command_init()
+        #    
+        #    #get last word which should be a number
+        #    #speak("turning on the lights")
+        #    bluetooth_stuff.turnon()
+        #    
+        #    kill_flash.set() #kill the lights flashing
             
-            kill_flash.set() #kill the lights flashing
+        #if value == "turn off the lights" or value == "deactivate lights" or value == "deactivate the lights":
+        #    command_init()
+        #    
+        #    #get last word which should be a number
+        #    #speak("turning off the lights")
+        #    bluetooth_stuff.turnoff()
+        #    
+        #    kill_flash.set() #kill the lights flashing
             
-        if value == "turn on the lights" or value == "activate lights" or value == "activate the lights":
-            command_init()
-            
-            #get last word which should be a number
-            #speak("turning on the lights")
-            bluetooth_stuff.turnon()
-            
-            kill_flash.set() #kill the lights flashing
-            
-        if value == "turn off the lights" or value == "deactivate lights" or value == "deactivate the lights":
-            command_init()
-            
-            #get last word which should be a number
-            #speak("turning off the lights")
-            bluetooth_stuff.turnoff()
-            
-            kill_flash.set() #kill the lights flashing
-            
-        for i in range(len(test)):
-            if eval(test[i].term):
+        for i in range(len(commands)):
+            if eval(commands[i].term):
                 command_init()
                 
-                test[i].run(value)
+                commands[i].run(value)
                 
                 kill_flash.set() #kill the lights flashing
         
@@ -264,14 +264,44 @@ class command:
     def run(self, value):
         exec(compile(self.output,"-","exec"))
 
-txt = """
+commands = []
+commands.append(command("re.match(r'open *', value) != None","""
+app_name = value.split(" ")
+speak("opening " + app_name[1])
+open_app.run(app_name[-1])"""))
+commands.append(command("(len(value) > 4) and (re.match(r'play *', value)) != None","""
 song_name = value.split(" ", 1)
 speak("playing " + song_name[1])
-play_music.start(song_name[1])
-"""
-test = []
-test.append(command("(len(value) > 4) and (re.match(r'play *', value) != None)",txt))
-test.append(command("hello world",txt))
+play_music.start(song_name[1])"""))
+commands.append(command("value == 'close'","play_music.close()"))
+commands.append(command("value == 'play'","play_music.play()"))
+commands.append(command("value == 'pause'","play_music.pause()"))
+commands.append(command("value == 'stop'","play_music.stop()"))
+commands.append(command("re.match(r'set music volume to *', value) != None","""
+volume_amount = value.split(" ") #get last word
+play_music.set_volume(int(volume_amount[-1]))"""))
+commands.append(command("value == 'reset audio'","""
+m = sr.Microphone()
+print("A moment of silence, please...")
+with m as source: r.adjust_for_ambient_noise(source)
+print("Set minimum energy threshold to {}".format(r.energy_threshold))"""))
+commands.append(command("(value == 'turn on the computer') or (value == 'turn on my computer')","send_magic_packet('70-85-C2-C7-2C-B6')"))
+commands.append(command("(value == 'turn on the server') or (value == 'turn on my server')","send_magic_packet('f8:0f:41:04:86:a8')"))
+commands.append(command("value == 'bake me a cake'","speak('i cannot bake a cake')"))
+commands.append(command("value == 'turn off computer'","""
+kill_flash.set() #kill the lights flashing
+os.system("sudo shutdown now")"""))
+commands.append(command("value == 'restart computer' or value == 'reboot computer'","""
+kill_flash.set() #kill the lights flashing
+os.system("sudo reboot now")"""))
+commands.append(command("re.match(r'shutdown at *', value) != None","""
+time = value.split(" ")
+print(time[-1])"""))
+commands.append(command("(re.match(r'set volume *', value) != None) or (re.match(r'set volume to *', value) != None)","""
+amount = value.split(" ")
+mixer.setvolume(int(amount[-1]))"""))
+commands.append(command("value == 'turn on the lights' or value == 'turn on lights' or value == 'activate lights' or value == 'activate the lights'","bluetooth_stuff.turnon()"))
+commands.append(command("value == 'turn off the lights' or 'turn off lights' or value == 'deactivate lights' or value == 'deactivate the lights'","bluetooth_stuff.turnoff()"))
 
 def reset_audio():
     color_temp = lights.color
