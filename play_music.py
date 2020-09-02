@@ -6,6 +6,12 @@ music_path = " "
 playing_song = False
 vlc_open = False
 
+def set_music_values(temp, temp2):
+    global mixer_record
+    global alsaaudio
+    mixer_record = temp
+    alsaaudio = temp2
+
 def start(song):
     song2 = song.title()
     for root, dirs, files in os.walk(music_path):
@@ -23,7 +29,7 @@ def start(song):
                     vlc_open = True
                     print(player)
                 else:
-                    player2 = Popen("vlc --one-instance --playlist-enqueue " + test, shell=True)
+                    player = Popen("vlc --one-instance --playlist-enqueue " + test, shell=True)
 
 def close():
     global playing_song

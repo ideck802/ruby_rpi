@@ -1,6 +1,7 @@
 from wakeonlan import send_magic_packet
 from gtts import gTTS
 from pocketsphinx import LiveSpeech
+from datetime import datetime
 import speech_recognition as sr
 import pygame
 import time
@@ -29,6 +30,7 @@ srtools = ["houndify", "wit"]
 
 mixer = alsaaudio.Mixer()
 mixer_record = alsaaudio.Mixer('Capture')
+play_music.set_music_values(mixer_record, alsaaudio)
 
 config = configparser.ConfigParser()
 path = '/'.join((os.path.abspath(__file__).replace('\\', '/')).split('/')[:-1])
@@ -39,6 +41,7 @@ play_music.music_path = config["paths"]["music_path"]
 is_listening = False
 
 def button_stuff():
+    global is_listening
     while True:
         state = GPIO.input(BUTTON)
         if state:
@@ -48,7 +51,7 @@ def button_stuff():
             if is_listening == True:
                 timeout()
             else:
-                reset_audio()
+                listen_for_commands_setup()
 
 import RPi.GPIO as GPIO
 BUTTON = 17
@@ -127,6 +130,7 @@ def listen_for_commands():
     except sr.RequestError as e:
         print("Uh oh! Couldn't request results from Houndify Speech Recognition service; {0}".format(e))
         srt = srt + 1
+        kill_pulse.set() #kill the lights pulsing
 
 class command:
     def __init__(self,term,output):
@@ -161,6 +165,19 @@ reset_audio()
 speech = LiveSpeech(lm=False, kws='words.list')
 speech_music = LiveSpeech(lm=False, kws='words_music.list')
 
+def listen_for_commands_setup():
+    global kill_pulse
+    global is_listening
+    kill_pulse = threading.Event()
+    lights_thread = threading.Thread(target=pulse_lights, args=(kill_pulse, ))
+    lights_thread.start()
+    pygame.mixer.music.load("yes.mp3")
+    pygame.mixer.music.play()
+    time.sleep(1)
+    print("yes?")
+    is_listening = True
+    listen_for_commands()
+
 def init_listen():
     global is_listening
     is_listening = False
@@ -171,53 +188,14 @@ def init_listen():
         for phrase in speech:
             print(phrase.segments())
             if phrase.segments()[0] == "ruby listen ":
-                kill_pulse = threading.Event()
-                lights_thread = threading.Thread(target=pulse_lights, args=(kill_pulse, ))
-                lights_thread.start()
-                pygame.mixer.music.load("yes.mp3")
-                pygame.mixer.music.play()
-                time.sleep(1)
-                print("yes?")
-                is_listening = True
-                listen_for_commands()
-                break
-            elif (phrase.segments()[0] == "play ") and (play_music.vlc_open == True):
-                play_music.play()
-                break
-            elif (phrase.segments()[0] == "pause ") and (play_music.vlc_open == True):
-                play_music.pause()
-                break
-            elif (phrase.segments()[0] == "stop ") and (play_music.vlc_open == True):
-                play_music.stop()
-                break
-            elif (phrase.segments()[0] == "close ") and (play_music.vlc_open == True):
-                play_music.close()
+                listen_for_commands_setup()
                 break
     else:
         print("listen music")
         for phrase in speech_music:
             print(phrase.segments())
-            if phrase.segments()[0] == "ruby ":
-                kill_pulse = threading.Event()
-                lights_thread = threading.Thread(target=pulse_lights, args=(kill_pulse, ))
-                lights_thread.start()
-                pygame.mixer.music.load("yes.mp3")
-                pygame.mixer.music.play()
-                time.sleep(1)
-                print("yes?")
-                listen_for_commands()
-                break
-            elif (phrase.segments()[0] == "play ") and (play_music.vlc_open == True):
-                play_music.play()
-                break
-            elif (phrase.segments()[0] == "pause ") and (play_music.vlc_open == True):
-                play_music.pause()
-                break
-            elif (phrase.segments()[0] == "stop ") and (play_music.vlc_open == True):
-                play_music.stop()
-                break
-            elif (phrase.segments()[0] == "close ") and (play_music.vlc_open == True):
-                play_music.close()
+            if phrase.segments()[0] == "ruby listen ":
+                listen_for_commands_setup()
                 break
     init_listen()
                 
