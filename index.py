@@ -15,15 +15,12 @@ import open_app
 import play_music
 import lights
 import bluetooth_stuff
+import octopi_control
 import command_file
 
 
 r = sr.Recognizer()
 m = sr.Microphone()
-
-client_id = "KZb9pi9EMnVpoxcTGDQWCw=="
-client_key = "FDOijmx1-dFpUVSz2JBNSpj26hWupoY-CoH9QZAsnp1X3EtZiu7-B_A158M2NFLanjeJp_XlNUYjaGLXNmUJxw=="
-client_key_wit = "EXPAIXPCS7TDH6D2WPICEDPWUWL7F45L"
 
 srt = 0
 srtools = ["houndify", "wit"]
@@ -35,6 +32,12 @@ play_music.set_music_values(mixer_record, alsaaudio)
 config = configparser.ConfigParser()
 path = '/'.join((os.path.abspath(__file__).replace('\\', '/')).split('/')[:-1])
 config.read(os.path.join(path, "config.ini"))
+
+client_id = config["api keys"]["houndify_id"]
+client_key = config["api keys"]["houndify"]
+client_key_wit = config["api keys"]["witai"]
+
+octo = octopi_control.octopi("192.168.2.10", "80", config["api keys"]["octoprint"])
 
 play_music.music_path = config["paths"]["music_path"]
 
