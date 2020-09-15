@@ -99,3 +99,21 @@ for i in range(len(files_list)):
     commands.append(command("value=='what is the extruder at' or value=='what is the tool at' or value=='what temperature is the extruder'","speak('The extruder is at ' + str(octo.get_tool_current()) + ' degrees celsius.')"))
     commands.append(command("value=='what is the bed at' or value=='what temperature is the bed'","speak('The print bed is at ' + str(octo.get_bed_current()) + ' degrees celsius.')"))
     #printer commands end
+    #calculators
+    commands.append(command("(re.match(r'what is .+ plus .+', value) != None)","""
+equ = text2int.text2int(value)
+equation = [int(s) for s in equ.split() if s.isdigit()]
+speak(str(int(equation[0]) + int(equation[1])))"""))
+    commands.append(command("(re.match(r'what is .+ subtract .+', value) != None) or (re.match(r'what is .+ minus .+', value) != None)","""
+equ = text2int.text2int(value)
+equation = [int(s) for s in equ.split() if s.isdigit()]
+speak(str(int(equation[0]) - int(equation[1])))"""))
+    commands.append(command("(re.match(r'what is .+ times .+', value) != None) or (re.match(r'what is .+ multiplied by .+', value) != None)","""
+equ = text2int.text2int(value)
+equation = [int(s) for s in equ.split() if s.isdigit()]
+speak(str(int(equation[0]) * int(equation[1])))"""))
+    commands.append(command("(re.match(r'what is .+ divided by .+', value) != None)","""
+equ = text2int.text2int(value)
+equation = [int(s) for s in equ.split() if s.isdigit()]
+speak(str(int(equation[0]) / int(equation[1])))"""))
+    #calculators end
