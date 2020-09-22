@@ -2,6 +2,7 @@ from wakeonlan import send_magic_packet
 from gtts import gTTS
 from pocketsphinx import LiveSpeech
 from datetime import datetime
+from ordinal_number import ordinal
 import speech_recognition as sr
 import pygame
 import time
@@ -17,6 +18,7 @@ import lights
 import bluetooth_stuff
 import octopi_control
 import command_file
+import google_calendar
 
 
 r = sr.Recognizer()
@@ -25,7 +27,7 @@ m = sr.Microphone()
 srt = 0
 srtools = ["houndify", "wit"]
 
-mixer = alsaaudio.Mixer()
+mixer = alsaaudio.Mixer('Master')
 mixer_record = alsaaudio.Mixer('Capture')
 play_music.set_music_values(mixer_record, alsaaudio)
 

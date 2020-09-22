@@ -45,7 +45,7 @@ else:
 time = [text2int.text2int(temp[3]), temp2]
 print("sudo shutdown " + time[0] + ":" + time[1])
 os.system("sudo shutdown " + time[0] + ":" + time[1])"""))
-    commands.append(command("(re.match(r'set volume *', value) != None) or (re.match(r'set volume to *', value) != None)","""
+    commands.append(command("(re.match(r'set the volume to *', value) != None) or (re.match(r'set volume to *', value) != None)","""
 amount = value.split(" ")
 amount = text2int.text2int(amount[-1])
 mixer.setvolume(int(amount))"""))
@@ -117,3 +117,21 @@ equ = text2int.text2int(value)
 equation = [int(s) for s in equ.split() if s.isdigit()]
 speak(str(int(equation[0]) / int(equation[1])))"""))
     #calculators end
+    commands.append(command("(re.match(r'i work from .+ to .+ on .+', value) != None)","""
+global numbers
+numbers = [int(s) for s in text2int.text2int(value).split() if s.isdigit()]
+numbers2 = [int(numbers[t])+12 if(int(numbers[t])<6 or int(numbers[t])>numbers[0] or int(numbers[t])<numbers[0]) else numbers[t] for t in range(2)]
+if (datetime.now().day > numbers[2]):
+    if (datetime.now().month == 12):
+        date = str(datetime.now().year+1) + '-01-' + "{:02d}".format(numbers[2])
+    else:
+        date = str(datetime.now().year) + '-' + "{:02d}".format(datetime.now().month+1) + '-' + "{:02d}".format(numbers[2])
+else:
+    date = str(datetime.now().year) + '-' + "{:02d}".format(datetime.now().month) + '-' + "{:02d}".format(numbers[2])
+google_calendar.add_event('Work at Mcdonalds', date, str(numbers2[0])+':00:00', date, str(numbers2[1])+':00:00')"""))
+    commands.append(command("value=='when do i work next'","""
+datetime = google_calendar.search_for_event('Work at Mcdonalds')[0]['start']['dateTime']
+datetime = datetime.split('T')
+time = (int(datetime[1].split(':')[0])-12) if int(datetime[1].split(':')[0])>12 else int(datetime[1].split(':')[0])
+speak('You work next on the '+ordinal(datetime[0].split('-')[-1])+' at '+str(time)+'o clock')"""))
+    
