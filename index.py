@@ -19,6 +19,7 @@ import bluetooth_stuff
 import octopi_control
 import command_file
 import google_calendar
+import computer_server
 
 
 r = sr.Recognizer()
@@ -52,11 +53,10 @@ def button_stuff():
         if state:
             time.sleep(0.2)
         else:
-            print(is_listening)
             if is_listening == True:
                 timeout()
             else:
-                listen_for_commands_setup()
+                speech.stop()
 
 import RPi.GPIO as GPIO
 BUTTON = 17
@@ -64,6 +64,9 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(BUTTON, GPIO.IN)
 button_thread = threading.Thread(target=button_stuff)
 button_thread.start()
+
+server_thread = threading.Thread(target=computer_server.serve)
+server_thread.start()
 
 def timeout():
     print("timeout")
@@ -202,6 +205,9 @@ def init_listen():
             if phrase.segments()[0] == "ruby listen ":
                 listen_for_commands_setup()
                 break
+            
+    if speech.interrupt:
+        listen_for_commands_setup()
     init_listen()
                 
 init_listen()
