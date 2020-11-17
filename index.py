@@ -1,5 +1,5 @@
 from wakeonlan import send_magic_packet
-from gtts import gTTS
+from google.cloud import texttospeech
 from pocketsphinx import LiveSpeech
 from datetime import datetime
 from ordinal_number import ordinal
@@ -82,10 +82,17 @@ def timeout_timer(pill2kill):
         counter+=1
         time.sleep(1)
 
+#text to speech stuff
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./ruby-for-pc-0b5827d59846.json"
+voice = texttospeech.VoiceSelectionParams(
+    language_code='en-US',
+    name='en-US-Standard-G',
+    ssml_gender=texttospeech.SsmlVoiceGender.FEMALE)
+google_tts_client = texttospeech.TextToSpeechClient()
 pygame.mixer.init()
 def speak(phrase):
-    tts = gTTS(phrase)
-    tts.save("speak.mp3")
+    response = google_tts_client.synthesize_speech(input=texttospeech.SynthesisInput(text=phrase), voice=voice, audio_config=texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3))
+    open('speak.mp3', 'wb').write(response.audio_content)
     pygame.mixer.music.load("speak.mp3")
     pygame.mixer.music.play()
     time.sleep(1)
