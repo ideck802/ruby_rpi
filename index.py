@@ -1,8 +1,10 @@
 from wakeonlan import send_magic_packet
-from google.cloud import texttospeech
+#from google.cloud import texttospeech
 from pocketsphinx import LiveSpeech
 from datetime import datetime
-from ordinal_number import ordinal
+from side_scripts.ordinal_number import ordinal
+from speech.speech_stuff import speak
+from side_scripts import text2int
 import speech_recognition as sr
 import pygame
 import time
@@ -11,7 +13,6 @@ import os
 import threading
 import alsaaudio
 import configparser
-import text2int
 import open_app
 import play_music
 import lights
@@ -46,6 +47,12 @@ play_music.music_path = config["paths"]["music_path"]
 
 is_listening = False
 
+def manual_hail():
+    if is_listening == True:
+        timeout()
+    else:
+        speech.stop()
+
 def button_stuff():
     global is_listening
     while True:
@@ -53,10 +60,7 @@ def button_stuff():
         if state:
             time.sleep(0.2)
         else:
-            if is_listening == True:
-                timeout()
-            else:
-                speech.stop()
+            manual_hail()
 
 import RPi.GPIO as GPIO
 BUTTON = 17
@@ -67,6 +71,8 @@ button_thread.start()
 
 server_thread = threading.Thread(target=computer_server.serve)
 server_thread.start()
+
+computer_server.pass_server_func(manual_hail)
 
 def timeout():
     print("timeout")
@@ -83,26 +89,27 @@ def timeout_timer(pill2kill):
         time.sleep(1)
 
 #text to speech stuff
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./ruby-for-pc-0b5827d59846.json"
-voice = texttospeech.VoiceSelectionParams(
-    language_code='en-US',
-    name='en-US-Standard-G',
-    ssml_gender=texttospeech.SsmlVoiceGender.FEMALE)
-google_tts_client = texttospeech.TextToSpeechClient()
-pygame.mixer.init()
-def speak(phrase):
-    response = google_tts_client.synthesize_speech(input=texttospeech.SynthesisInput(text=phrase), voice=voice, audio_config=texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3))
-    open('speak.mp3', 'wb').write(response.audio_content)
-    pygame.mixer.music.load("speak.mp3")
-    pygame.mixer.music.play()
-    time.sleep(1)
+#os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./ruby-for-pc-0b5827d59846.json"
+#voice = texttospeech.VoiceSelectionParams(
+#    language_code='en-US',
+#    name='en-US-Wavenet-H',
+#    ssml_gender=texttospeech.SsmlVoiceGender.FEMALE)
+#google_tts_client = texttospeech.TextToSpeechClient()
+#pygame.mixer.init()
+#def speak(phrase):
+#    response = google_tts_client.synthesize_speech(input=texttospeech.SynthesisInput(text=phrase), voice=voice, audio_config=texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3))
+#    open('speak.mp3', 'wb').write(response.audio_content)
+#    pygame.mixer.music.load("speak.mp3")
+#    pygame.mixer.music.play()
+#    time.sleep(1)
 
 def command_init():
     global kill_flash
+    global flash_thread
     kill_pulse.set() #kill the lights pulsing
     kill_flash = threading.Event()
-    lights_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
-    lights_thread.start()
+    flash_thread = threading.Thread(target=flash_lights, args=(kill_flash, ))
+    flash_thread.start()
 
 def listen_for_commands():
     global srt
@@ -136,16 +143,20 @@ def listen_for_commands():
                 command_file.commands[i].run(value)
                 
                 kill_flash.set() #kill the lights flashing
+                flash_thread.join()
         
         kill_pulse.set() #kill the lights pulsing
+        pulse_thread.join()
         
     except sr.UnknownValueError:
         print("Oops! Didn't catch that")
         kill_pulse.set() #kill the lights pulsing
+        pulse_thread.join()
     except sr.RequestError as e:
         print("Uh oh! Couldn't request results from Houndify Speech Recognition service; {0}".format(e))
         srt = srt + 1
         kill_pulse.set() #kill the lights pulsing
+        pulse_thread.join()
 
 class command:
     def __init__(self,term,output):
@@ -175,18 +186,25 @@ def flash_lights(pill2kill):
     while not pill2kill.is_set():
         lights.flash(1)
 
-reset_audio()
+def audio_loop():
+    while True:
+        reset_audio()
+        time.sleep(300)
+
+ambient_audio_thread = threading.Thread(target=audio_loop)
+ambient_audio_thread.start()
+
 
 speech = LiveSpeech(lm=False, kws='words.list')
-speech_music = LiveSpeech(lm=False, kws='words_music.list')
 
 def listen_for_commands_setup():
     global kill_pulse
     global is_listening
+    global pulse_thread
     kill_pulse = threading.Event()
-    lights_thread = threading.Thread(target=pulse_lights, args=(kill_pulse, ))
-    lights_thread.start()
-    pygame.mixer.music.load("yes.mp3")
+    pulse_thread = threading.Thread(target=pulse_lights, args=(kill_pulse, ))
+    pulse_thread.start()
+    pygame.mixer.music.load("speech/speech_files/yes.mp3")
     pygame.mixer.music.play()
     time.sleep(1)
     print("yes?")
@@ -198,20 +216,13 @@ def init_listen():
     is_listening = False
     print(play_music.playing_song)
     global kill_pulse
-    if play_music.playing_song == False:
-        print("listen normal")
-        for phrase in speech:
-            print(phrase.segments())
-            if phrase.segments()[0] == "ruby listen ":
-                listen_for_commands_setup()
-                break
-    else:
-        print("listen music")
-        for phrase in speech_music:
-            print(phrase.segments())
-            if phrase.segments()[0] == "ruby listen ":
-                listen_for_commands_setup()
-                break
+    
+    print("listen normal")
+    for phrase in speech:
+        print(phrase.segments())
+        if phrase.segments()[0] == "ruby listen ":
+            listen_for_commands_setup()
+            break
             
     if speech.interrupt:
         listen_for_commands_setup()
