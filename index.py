@@ -14,7 +14,7 @@ import threading
 import alsaaudio
 import configparser
 import open_app
-import play_music
+import media_stuff
 import lights
 import bluetooth_stuff
 import octopi_control
@@ -27,11 +27,11 @@ r = sr.Recognizer()
 m = sr.Microphone()
 
 srt = 0
-srtools = ["houndify", "wit"]
+srtools = ["houndify", "google", "wit"]
 
 mixer = alsaaudio.Mixer('Master')
 mixer_record = alsaaudio.Mixer('Capture')
-play_music.set_music_values(mixer_record, alsaaudio)
+media_stuff.set_music_values(mixer_record, alsaaudio)
 
 config = configparser.ConfigParser()
 path = '/'.join((os.path.abspath(__file__).replace('\\', '/')).split('/')[:-1])
@@ -41,9 +41,9 @@ client_id = config["api keys"]["houndify_id"]
 client_key = config["api keys"]["houndify"]
 client_key_wit = config["api keys"]["witai"]
 
-octo = octopi_control.octopi("192.168.2.10", "80", config["api keys"]["octoprint"])
+octo = octopi_control.octopi(config["ip addresses"]["octopi"], "80", config["api keys"]["octoprint"])
 
-play_music.music_path = config["paths"]["music_path"]
+media_stuff.music_path = config["paths"]["music_path"]
 
 is_listening = False
 
@@ -88,21 +88,6 @@ def timeout_timer(pill2kill):
         counter+=1
         time.sleep(1)
 
-#text to speech stuff
-#os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./ruby-for-pc-0b5827d59846.json"
-#voice = texttospeech.VoiceSelectionParams(
-#    language_code='en-US',
-#    name='en-US-Wavenet-H',
-#    ssml_gender=texttospeech.SsmlVoiceGender.FEMALE)
-#google_tts_client = texttospeech.TextToSpeechClient()
-#pygame.mixer.init()
-#def speak(phrase):
-#    response = google_tts_client.synthesize_speech(input=texttospeech.SynthesisInput(text=phrase), voice=voice, audio_config=texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3))
-#    open('speak.mp3', 'wb').write(response.audio_content)
-#    pygame.mixer.music.load("speak.mp3")
-#    pygame.mixer.music.play()
-#    time.sleep(1)
-
 def command_init():
     global kill_flash
     global flash_thread
@@ -125,10 +110,13 @@ def listen_for_commands():
     try:
         if srtools[srt] == "houndify":
             # recognize speech using Houndify Speech Recognition
-            value = r.recognize_houndify(audio, client_id, client_key)
+            value = r.recognize_houndify(audio, client_id, client_key).lower()
+        elif srtools[srt] == "google":
+            # recognize speech using Wit.ai Speech Recognition
+            value = r.recognize_google(audio).lower()
         elif srtools[srt] == "wit":
             # recognize speech using Wit.ai Speech Recognition
-            value = r.recognize_wit(audio, client_key_wit)
+            value = r.recognize_wit(audio, client_key_wit).lower()
         
         #value = text2int.text2int(value)
         #omit whitespace
@@ -153,7 +141,7 @@ def listen_for_commands():
         kill_pulse.set() #kill the lights pulsing
         pulse_thread.join()
     except sr.RequestError as e:
-        print("Uh oh! Couldn't request results from Houndify Speech Recognition service; {0}".format(e))
+        print("Uh oh! Couldn't request results; {0}".format(e))
         srt = srt + 1
         kill_pulse.set() #kill the lights pulsing
         pulse_thread.join()
@@ -189,7 +177,7 @@ def flash_lights(pill2kill):
 def audio_loop():
     while True:
         reset_audio()
-        time.sleep(300)
+        time.sleep(600)
 
 ambient_audio_thread = threading.Thread(target=audio_loop)
 ambient_audio_thread.start()
@@ -214,7 +202,7 @@ def listen_for_commands_setup():
 def init_listen():
     global is_listening
     is_listening = False
-    print(play_music.playing_song)
+    print(media_stuff.playing_song)
     global kill_pulse
     
     print("listen normal")
