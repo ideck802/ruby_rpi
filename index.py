@@ -5,11 +5,12 @@ from datetime import datetime
 from side_scripts.ordinal_number import ordinal
 from speech.speech_stuff import speak
 from side_scripts import text2int
+from subprocess import Popen
 import speech_recognition as sr
 import pygame
 import time
 import re
-import os
+import sys, os
 import threading
 import alsaaudio
 import configparser
@@ -21,6 +22,7 @@ import octopi_control
 import command_file
 import google_calendar
 import computer_server
+import smart_home
 
 
 r = sr.Recognizer()
@@ -47,6 +49,25 @@ media_stuff.music_path = config["paths"]["music_path"]
 
 is_listening = False
 
+def get_home_setup():
+    send_magic_packet('70:85:c2:c7:2c:b6')
+    send_magic_packet('f8:0f:41:04:86:a8')
+
+def check_for_phone():
+    phone_connected = True
+    while True:
+        response = os.system("ping -c 1 192.168.1.17 >/dev/null")
+        if response == 0:
+            if phone_connected == False:
+                get_home_setup()
+            phone_connected = True
+        else:
+            phone_connected = False
+        time.sleep(15)
+
+phone_checking = threading.Thread(target=check_for_phone)
+phone_checking.start()
+
 def manual_hail():
     if is_listening == True:
         timeout()
@@ -71,6 +92,15 @@ button_thread.start()
 
 server_thread = threading.Thread(target=computer_server.serve)
 server_thread.start()
+
+def door_opened():
+    if (bluetooth_stuff.at_home):
+        speak("Bye Isaac, see you later!")
+    elif (not bluetooth_stuff.at_home):
+        speak("Welcome back Isaac!")
+
+bt_door_thread = threading.Thread(target=bluetooth_stuff.init_door_detector, args=(door_opened,))
+bt_door_thread.start()
 
 computer_server.pass_server_func(manual_hail)
 
@@ -202,7 +232,6 @@ def listen_for_commands_setup():
 def init_listen():
     global is_listening
     is_listening = False
-    print(media_stuff.playing_song)
     global kill_pulse
     
     print("listen normal")

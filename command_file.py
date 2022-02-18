@@ -42,6 +42,14 @@ media_stuff.start(' '.join(song_name[3:]), False)"""))
 volume_amount = value.split(" ") #get last word
 volume_amount = text2int.text2int(volume_amount[-1])
 media_stuff.set_volume(int(volume_amount))"""))
+    # turn on the media player server
+    commands.append(command("value == 'turn on tv' or value == 'turn on the tv'","""
+smart_home.outlet_off()
+time.sleep(1)
+smart_home.outlet_on()"""))
+    # turn off the media player server
+    commands.append(command("value == 'turn off tv' or value == 'turn off the tv'","""
+Popen("sshpass -p Ipd802@@ ssh root@192.168.1.14 'poweroff'", shell=True)"""))
     #
     # force/manually adjust for ambient noise
     #
