@@ -1,10 +1,7 @@
 """
-The code is based on https://github.com/tinue/APA102_Pi
+from https://github.com/tinue/APA102_Pi
 This is the main driver module for APA102 LEDs
-
-License: GPL V2
 """
-
 import spidev
 from math import ceil
 
@@ -14,46 +11,35 @@ RGB_MAP = { 'rgb': [3, 2, 1], 'rbg': [3, 1, 2], 'grb': [2, 3, 1],
 class APA102:
     """
     Driver for APA102 LEDS (aka "DotStar").
-
     (c) Martin Erzberger 2016-2017
-
     My very first Python code, so I am sure there is a lot to be optimized ;)
-
     Public methods are:
      - set_pixel
      - set_pixel_rgb
      - show
      - clear_strip
      - cleanup
-
     Helper methods for color manipulation are:
      - combine_color
      - wheel
-
     The rest of the methods are used internally and should not be used by the
     user of the library.
-
     Very brief overview of APA102: An APA102 LED is addressed with SPI. The bits
     are shifted in one by one, starting with the least significant bit.
-
     An LED usually just forwards everything that is sent to its data-in to
     data-out. While doing this, it remembers its own color and keeps glowing
     with that color as long as there is power.
-
     An LED can be switched to not forward the data, but instead use the data
     to change it's own color. This is done by sending (at least) 32 bits of
     zeroes to data-in. The LED then accepts the next correct 32 bit LED
     frame (with color information) as its new color setting.
-
     After having received the 32 bit color frame, the LED changes color,
     and then resumes to just copying data-in to data-out.
-
     The really clever bit is this: While receiving the 32 bit LED frame,
     the LED sends zeroes on its data-out line. Because a color frame is
     32 bits, the LED sends 32 bits of zeroes to the next LED.
     As we have seen above, this means that the next LED is now ready
     to accept a color frame and update its color.
-
     So that's really the entire protocol:
     - Start by sending 32 bits of zeroes. This prepares LED 1 to update
       its color.
@@ -61,7 +47,6 @@ class APA102:
       then LED 2 etc.
     - Finish off by cycling the clock line a few times to get all data
       to the very last LED on the strip
-
     The last step is necessary, because each LED delays forwarding the data
     a bit. Imagine ten people in a row. When you yell the last color
     information, i.e. the one for person ten, to the first person in
@@ -97,7 +82,6 @@ class APA102:
 
     def clock_start_frame(self):
         """Sends a start frame to the LED strip.
-
         This method clocks out a start frame, telling the receiving LED
         that it must update its own color now.
         """
@@ -106,24 +90,20 @@ class APA102:
 
     def clock_end_frame(self):
         """Sends an end frame to the LED strip.
-
         As explained above, dummy data must be sent after the last real colour
         information so that all of the data can reach its destination down the line.
         The delay is not as bad as with the human example above.
         It is only 1/2 bit per LED. This is because the SPI clock line
         needs to be inverted.
-
         Say a bit is ready on the SPI data line. The sender communicates
         this by toggling the clock line. The bit is read by the LED
         and immediately forwarded to the output data line. When the clock goes
         down again on the input side, the LED will toggle the clock up
         on the output to tell the next LED that the bit is ready.
-
         After one LED the clock is inverted, and after two LEDs it is in sync
         again, but one cycle behind. Therefore, for every two LEDs, one bit
         of delay gets accumulated. For 300 LEDs, 150 additional bits must be fed to
         the input of LED one so that the data can reach the last LED.
-
         Ultimately, we need to send additional numLEDs/2 arbitrary data bits,
         in order to trigger numLEDs/2 additional clock changes. This driver
         sends zeroes, which has the benefit of getting LED one partially or
@@ -149,7 +129,6 @@ class APA102:
 
     def set_pixel(self, led_num, red, green, blue, bright_percent=100):
         """Sets the color of one pixel in the LED stripe.
-
         The changed pixel is not shown yet on the Stripe, it is only
         written to the pixel buffer. Colors are passed individually.
         If brightness is not set the global brightness setting is used.
@@ -176,7 +155,6 @@ class APA102:
 
     def set_pixel_rgb(self, led_num, rgb_color, bright_percent=100):
         """Sets the color of one pixel in the LED stripe.
-
         The changed pixel is not shown yet on the Stripe, it is only
         written to the pixel buffer.
         Colors are passed combined (3 bytes concatenated)
@@ -189,7 +167,6 @@ class APA102:
 
     def rotate(self, positions=1):
         """ Rotate the LEDs by the specified number of positions.
-
         Treating the internal LED array as a circular buffer, rotate it by
         the specified number of positions. The number could be negative,
         which means rotating in the opposite direction.
@@ -200,7 +177,6 @@ class APA102:
 
     def show(self):
         """Sends the content of the pixel buffer to the strip.
-
         Todo: More than 1024 LEDs requires more than one xfer operation.
         """
         self.clock_start_frame()

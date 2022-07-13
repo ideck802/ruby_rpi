@@ -3,7 +3,8 @@ from wakeonlan import send_magic_packet
 from pocketsphinx import LiveSpeech
 from datetime import datetime
 from side_scripts.ordinal_number import ordinal
-from speech.speech_stuff import speak
+#from speech.speech_stuff import speak
+import speech.speech_stuff
 from side_scripts import text2int
 from subprocess import Popen
 import speech_recognition as sr
@@ -36,8 +37,8 @@ mixer_record = alsaaudio.Mixer('Capture')
 media_stuff.set_music_values(mixer_record, alsaaudio)
 
 config = configparser.ConfigParser()
-path = '/'.join((os.path.abspath(__file__).replace('\\', '/')).split('/')[:-1])
-config.read(os.path.join(path, "config.ini"))
+#path = '/'.join((os.path.abspath(__file__).replace('\\', '/')).split('/')[:-1])
+config.read("./config.ini")
 
 client_id = config["api keys"]["houndify_id"]
 client_key = config["api keys"]["houndify"]
@@ -47,16 +48,25 @@ octo = octopi_control.octopi(config["ip addresses"]["octopi"], "80", config["api
 
 media_stuff.music_path = config["paths"]["music_path"]
 
+media_stuff.media_player = config["ip addresses"]["media_player"]
+media_stuff.file_server = config["ip addresses"]["file_server"]
+
+media_stuff.media_player_password = config["passwords"]["media_player_password"]
+media_stuff.file_server_password = config["passwords"]["file_server_password"]
+
+speech.speech_stuff.header["Ocp-Apim-Subscription-Key"] = config["api keys"]["microsoft_tts"]
+
+speak = speech.speech_stuff.speak
+
 is_listening = False
 
 def get_home_setup():
-    send_magic_packet('70:85:c2:c7:2c:b6')
-    send_magic_packet('f8:0f:41:04:86:a8')
+    send_magic_packet('70:85:c2:c7:2c:b6') #turn on my pc
 
 def check_for_phone():
     phone_connected = True
     while True:
-        response = os.system("ping -c 1 192.168.1.17 >/dev/null")
+        response = os.system("ping -c 1 " + config["ip addresses"]["phone"] + " >/dev/null")
         if response == 0:
             if phone_connected == False:
                 get_home_setup()
@@ -95,9 +105,9 @@ server_thread.start()
 
 def door_opened():
     if (bluetooth_stuff.at_home):
-        speak("Bye Isaac, see you later!")
+        speak("Bye! See you later.")
     elif (not bluetooth_stuff.at_home):
-        speak("Welcome back Isaac!")
+        speak("Hi there, welcome!")
 
 bt_door_thread = threading.Thread(target=bluetooth_stuff.init_door_detector, args=(door_opened,))
 bt_door_thread.start()
@@ -106,9 +116,9 @@ computer_server.pass_server_func(manual_hail)
 
 def timeout():
     print("timeout")
-    mixer_record.setvolume(mixer_record.getvolume(alsaaudio.PCM_CAPTURE)[0]-30)
+    mixer_record.setvolume(mixer_record.getvolume(alsaaudio.PCM_CAPTURE)[0]-int(config["other"]["timeout_volume_adjustment"]))
     time.sleep(3)
-    mixer_record.setvolume(mixer_record.getvolume(alsaaudio.PCM_CAPTURE)[0]+30)
+    mixer_record.setvolume(mixer_record.getvolume(alsaaudio.PCM_CAPTURE)[0]+int(config["other"]["timeout_volume_adjustment"]))
 
 def timeout_timer(pill2kill):
     counter = 0
@@ -199,10 +209,14 @@ def reset_audio():
 def pulse_lights(pill2kill):
     while not pill2kill.is_set():
         lights.pulse(1)
+    else:
+        lights.off()
         
 def flash_lights(pill2kill):
     while not pill2kill.is_set():
         lights.flash(1)
+    else:
+        lights.off()
 
 def audio_loop():
     while True:

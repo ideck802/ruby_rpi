@@ -25,7 +25,7 @@ media_stuff.start_folder(' '.join(song_name[2:]))"""))
     # play movie/show or video on media player (server)
     commands.append(command("""(value!='play' and value!='play music' and value!='play the movie' and ('play folder' not in value)) and ((re.match(r'play the movie *', value))!=None or (re.match(r'play the show *', value))!=None)""","""
 song_name = value.split(" ")
-speak("playing the video" + ' '.join(song_name[3:]))
+speak("playing the show" + ' '.join(song_name[3:])) if 'show' in value else speak("playing the movie" + ' '.join(song_name[3:]))
 media_stuff.start(' '.join(song_name[3:]), False)"""))
     # resume/play kodi thats running on media player server
     commands.append(command("value == 'play' or value == 'play music' or value == 'play the movie'","media_stuff.play_pause()"))
@@ -41,15 +41,18 @@ media_stuff.start(' '.join(song_name[3:]), False)"""))
     commands.append(command("(re.match(r'set the music volume to *', value) != None) or (re.match(r'set the volume to *', value) != None)","""
 volume_amount = value.split(" ") #get last word
 volume_amount = text2int.text2int(volume_amount[-1])
-media_stuff.set_volume(int(volume_amount))"""))
+media_stuff.set_volume(int(volume_amount))
+speak("setting the volume to " + volume_amount)"""))
     # turn on the media player server
     commands.append(command("value == 'turn on tv' or value == 'turn on the tv'","""
 smart_home.outlet_off()
 time.sleep(1)
-smart_home.outlet_on()"""))
+smart_home.outlet_on()
+speak("the tv is turning on")"""))
     # turn off the media player server
     commands.append(command("value == 'turn off tv' or value == 'turn off the tv'","""
-Popen("sshpass -p Ipd802@@ ssh root@192.168.1.14 'poweroff'", shell=True)"""))
+Popen("sshpass -p Ipd802@@ ssh root@192.168.1.14 'poweroff'", shell=True)
+speak("turning off the tv")"""))
     #
     # force/manually adjust for ambient noise
     #
@@ -66,9 +69,9 @@ print("Set minimum energy threshold to {}".format(r.energy_threshold))"""))
     # turn on my file server
     commands.append(command("(value == 'turn on the server') or (value == 'turn on my server')","send_magic_packet('f8:0f:41:04:86:a8')"))
     # turn off the file server
-    commands.append(command("(value == 'turn off the server') or (value == 'turn off my server') or (value == 'shutdown off the server') or (value == 'shutdown my server')","os.system('./shutdown_server')"))
-    # turn on my media player server
-    commands.append(command("(value == 'turn on the tv') or (value == 'turn on my tv')","send_magic_packet('84:7b:eb:f2:6c:8c')"))
+    commands.append(command("(value == 'turn off the server') or (value == 'turn off my server') or (value == 'shutdown off the server') or (value == 'shutdown my server')","""
+os.system('./shutdown_server')
+speak("your server is shutting down")"""))
     #
     # printer commands start
     #
@@ -91,13 +94,15 @@ octo.move_tool(direction)"""))
 temp = text2int.text2int(value)
 temp = temp.split(" ")
 if temp[-1].isdigit():
-    octo.set_tool_temp(int(temp[-1]))"""))
+    octo.set_tool_temp(int(temp[-1]))
+    speak("setting the extruder to " + temp[-1] + " degrees celsius")"""))
     # set the temperature of the print bed
     commands.append(command("(re.match(r'set bed to *', value) != None) or (re.match(r'set the bed to *', value) != None)","""
 temp = text2int.text2int(value)
 temp = temp.split(" ")
 if temp[-1].isdigit():
-    octo.set_bed_temp(int(temp[-1]))"""))
+    octo.set_bed_temp(int(temp[-1]))
+    speak("setting the print bed to " + temp[-1] + " degrees celsius")"""))
     # extrude the filament by stated amount
     commands.append(command("(re.match(r'extrude *', value) != None) and (re.match(r'(?:[A-Za-z]+ )[A-Za-z]+', value))","""
 amount = text2int.text2int(value)
@@ -115,15 +120,23 @@ for i in range(len(files_list)):
         octo.select_print_file(files_list["files"][i]["display"])
         break"""))
     # begin a print
-    commands.append(command("value=='start print' or value=='start printing' or value=='start the print' or value == 'begin printing'","octo.start_job()"))
+    commands.append(command("value=='start print' or value=='start printing' or value=='start the print' or value == 'begin printing'","""
+octo.start_job()
+speak("the print will start when heated up")"""))
     # pause an ongoing print
-    commands.append(command("value=='pause the print' or value=='resume the print' or value=='resume printing'","octo.pause_job()"))
+    commands.append(command("value=='pause the print' or value=='resume the print' or value=='resume printing'","""
+octo.pause_job()
+speak("pausing the print")"""))
     # cancel/stop/halt the ongoing print
-    commands.append(command("value=='stop printing' or value=='stop the print'","octo.cancel_job()"))
+    commands.append(command("value=='stop printing' or value=='stop the print'","""
+octo.cancel_job()
+speak("cancelling the print")"""))
     # try to reconnect/connect to the printer over usb
     commands.append(command("value=='connect printer' or value=='connect to the printer' or value=='reconnect printer'","octo.connect_printer()"))
     # turn off the octoprint server rpi
-    commands.append(command("value=='turn off printer' or value=='turn off the printer' or value=='turn off my printer'","octo.shutdown_octoprint()"))
+    commands.append(command("value=='turn off printer' or value=='turn off the printer' or value=='turn off my printer'","""
+octo.shutdown_octoprint()
+speak("turning off octo print")"""))
     # restart the octoprint server rpi
     commands.append(command("value=='restart printer' or value=='reboot printer' or value=='restart the printer' or value=='reboot the printer' or value=='restart my printer' or value=='reboot my printer'","octo.restart_octoprint()"))
     # tell the progress of the print by percentage
@@ -172,7 +185,8 @@ if (datetime.now().day > numbers[2]):
         date = str(datetime.now().year) + '-' + "{:02d}".format(datetime.now().month+1) + '-' + "{:02d}".format(numbers[2])
 else:
     date = str(datetime.now().year) + '-' + "{:02d}".format(datetime.now().month) + '-' + "{:02d}".format(numbers[2])
-google_calendar.add_event('Work at Mcdonalds', date, str(numbers2[0])+':00:00', date, str(numbers2[1])+':00:00')"""))
+google_calendar.add_event('Work at Mcdonalds', date, str(numbers2[0])+':00:00', date, str(numbers2[1])+':00:00')
+speak("your schedule is updated")"""))
     # read back the time and date of the next event that I work
     commands.append(command("value=='when do i work next'","""
 datetime2 = google_calendar.search_for_event('Work at Mcdonalds')[0]['start']['dateTime']

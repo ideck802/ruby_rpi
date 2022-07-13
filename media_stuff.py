@@ -6,8 +6,13 @@ import requests
 import json
 
 music_path = " "
+media_player = " "
+file_server = " "
 
-url = "http://192.168.1.14:8080/jsonrpc"
+media_player_password = " "
+file_server_password = " "
+
+url = "http://" + media_player + ":8080/jsonrpc"
 
 def set_music_values(temp, temp2):
     global mixer_record
@@ -17,7 +22,7 @@ def set_music_values(temp, temp2):
 
 # mount the files server on the media player server's directory (if it isn't already)
 def mount_server():
-    Popen("sshpass -p Ipd802@@ ssh root@192.168.1.14 '[ ! -d \"./media_server/music/\" ] && mount -t nfs 192.168.1.7:/ ./media_server'", shell=True)
+    Popen("sshpass -p " + media_player_password + " ssh root@" + media_player + " '[ ! -d \"./media_server/media/music/\" ] && mount -t nfs " + file_server + ":/media/ ./media_server'", shell=True)
 
 # check whether there is an open/playing player running on the media player server
 def which_player_open():
@@ -39,7 +44,7 @@ def start(song, is_music):
     search_path = "/home/pi/media_server/"
     mount_server()
     # mount the files server on ruby, if it hasn't already been done
-    Popen("[ ! -d \"/home/pi/media_server/music/\" ] && curlftpfs Isaac:ipd80200@192.168.1.7:21/ /home/pi/media_server", shell=True)
+    Popen("[ ! -d \"/home/pi/media_server/music/\" ] && curlftpfs '" + file_server_password + "@" + file_server + ":21/' /home/pi/media_server", shell=True)
     search_term = song.lower()
     if (is_music):
         # search through music files for a specific song/songs
@@ -81,7 +86,7 @@ def start_folder(folder):
     search_path = "/home/pi/media_server/"
     mount_server()
     # mount the file server on ruby if not already done
-    Popen("[ ! -d \"/home/pi/media_server/music/\" ] && curlftpfs Isaac:ipd80200@192.168.1.7:21/ /home/pi/media_server", shell=True)
+    Popen("[ ! -d \"/home/pi/media_server/music/\" ] && curlftpfs '" + file_server_password + "@" + file_server + ":21/' /home/pi/media_server", shell=True)
     search_term = folder.lower()
     for root, dirs, files in os.walk(search_path + "music"):
         for direct in dirs:
